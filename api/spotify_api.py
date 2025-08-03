@@ -1,3 +1,4 @@
+"""Class for handling Spotify API."""
 import base64
 import os
 
@@ -6,7 +7,9 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+
 class SpotifyAPI:
+    """Class for handling Spotify API."""
     TOKEN_URL: str = "https://accounts.spotify.com/api/token"
 
     def __init__(self) -> None:
@@ -43,6 +46,15 @@ class SpotifyAPI:
         self.expires_in = data["expires_in"]
 
         return self.access_token
+
+    def get_headers(self) -> dict[str, str]:
+        if not self.access_token:
+            raise RuntimeError("No access token. Call get_token() first.")
+        return {
+            "Authorization": f"Bearer {self.access_token}",
+            "Content-Type": "application/json",
+        }
+
 
 spotify_client = SpotifyAPI()
 token = spotify_client.get_token()
