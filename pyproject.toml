@@ -17,9 +17,6 @@ dev = [
 ]
 
 [tool.ruff]
-# Directories to check
-src = ["src", "tests"]
-
 line-length = 88
 indent-width = 4
 
