@@ -1,6 +1,8 @@
 """Class for handling Spotify API."""
+
 import base64
 import os
+from typing import Any
 
 import requests
 from dotenv import load_dotenv
@@ -10,7 +12,9 @@ load_dotenv()
 
 class SpotifyAPI:
     """Class for handling Spotify API."""
+
     TOKEN_URL: str = "https://accounts.spotify.com/api/token"
+    BASE_URL: str = "https://api.spotify.com"
 
     def __init__(self) -> None:
         self.client_id: str | None = os.getenv("CLIENT_ID")
@@ -54,6 +58,36 @@ class SpotifyAPI:
             "Authorization": f"Bearer {self.access_token}",
             "Content-Type": "application/json",
         }
+
+    def make_request(self, endpoint: str, params: dict | None = None) -> dict[str, Any]:
+        url = self.BASE_URL + endpoint
+        headers = self.get_headers()
+
+        req = requests.get(url=url, headers=headers, params=params, timeout=10)
+
+        if req.status_code != 200:
+            raise RuntimeError(f"Failed to make request: {req.status_code} {req.text}")
+
+        return req.json()
+
+    def search(
+        self,
+        query: str,
+        search_type: list[str],
+        limit: int = 10,
+        market: str | None = None,
+    ) -> dict[str, None]:
+        search_type = ",".join(search_type)
+        params = {
+            "q": query,
+            "type": search_type,
+            "limit": limit,
+        }
+
+        if market is not None:
+            params["market"] = market
+
+        return self.make_request("/v1/search", params=params)
 
 
 spotify_client = SpotifyAPI()
