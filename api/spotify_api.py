@@ -89,7 +89,11 @@ class SpotifyAPI:
 
         return self.make_request("/v1/search", params=params)
 
+    def get_track(self, track_id: str):
+        return self.make_request(f"/v1/tracks/{track_id}")
 
-spotify_client = SpotifyAPI()
-token = spotify_client.get_token()
-print(token)
+    def get_artist(self, artist_id: str):
+        return self.make_request(f"/v1/artists/{artist_id}")
+
+    def get_album(self, album_id: str):
+        return self.make_request(f"/v1/albums/{album_id}")
