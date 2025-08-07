@@ -11,12 +11,26 @@ load_dotenv()
 
 
 class SpotifyAPI:
-    """Class for handling Spotify API."""
+    """Client for interacting with the Spotify Web API.
+
+    This class handles authentication and provides helper methods
+    for accessing common Spotify endpoints such as trucks, artists,
+    albums and search.
+    """
 
     TOKEN_URL: str = "https://accounts.spotify.com/api/token"
     BASE_URL: str = "https://api.spotify.com"
 
     def __init__(self) -> None:
+        """Initialize the SpotifyAPI client.
+
+        Loads client credentials from environment variables
+        (`CLIENT_ID` and `CLIENT_SECRET`) and prepares the base64
+        encoded credentials for authentication.
+
+        Raises:
+            ValueError: If `CLIENT_ID` or `CLIENT_SECRET` are missing.
+        """
         self.client_id: str | None = os.getenv("CLIENT_ID")
         self.client_secret: str | None = os.getenv("CLIENT_SECRET")
 
@@ -32,6 +46,14 @@ class SpotifyAPI:
         self.expires_in: int | None = None
 
     def get_token(self) -> str:
+        """Obtain an access token using Client Credentials Flow.
+
+        Returns:
+            str: Access token string.
+
+        Raises:
+            RuntimeError: If the token request fails.
+        """
         token_data: dict[str, str] = {"grant_type": "client_credentials"}
         token_headers: dict[str, str] = {
             "Authorization": f"Basic {self.client_creds_b64}",
@@ -52,6 +74,14 @@ class SpotifyAPI:
         return self.access_token
 
     def get_headers(self) -> dict[str, str]:
+        """Build headers for authorized Spotify API requests.
+
+        Returns:
+            dict: Headers including the Bearer access token.
+
+        Raises:
+            RuntimeError: If `get_token()` has not been called.
+        """
         if not self.access_token:
             raise RuntimeError("No access token. Call get_token() first.")
         return {
@@ -60,6 +90,18 @@ class SpotifyAPI:
         }
 
     def make_request(self, endpoint: str, params: dict | None = None) -> dict[str, Any]:
+        """Make a GET request to the Spotify API.
+
+        Args:
+            endpoint (str): API endpoint (e.g., "/v1/tracks/{id}).
+            params (dict | None): Optional query parameters.
+
+        Returns:
+            dict: JSON response from the Spotify API.
+
+        Raises:
+            RuntimeError: If the request fails.
+        """
         url = self.BASE_URL + endpoint
         headers = self.get_headers()
 
@@ -77,6 +119,18 @@ class SpotifyAPI:
         limit: int = 10,
         market: str | None = None,
     ) -> dict[str, None]:
+        """Search for tracks, artists, albums or playlists.
+
+        Args:
+            query (str): Search query string (e.g., "Taylor Swift").
+            search_type (list[str]): Types to search (e.g., ["track", "album"]).
+            limit (int, optional): Number of results to return. Defaults to 10.
+            market (str | None, optional): Market code (e.g., "US", "PL").
+                Defaults to None.
+
+        Returns:
+            dict: JSON response containing search results.
+        """
         search_type = ",".join(search_type)
         params = {
             "q": query,
@@ -90,10 +144,34 @@ class SpotifyAPI:
         return self.make_request("/v1/search", params=params)
 
     def get_track(self, track_id: str):
+        """Retrieve information about a track.
+
+        Args:
+            track_id (str): Spotify track ID.
+
+        Returns:
+            dict: JSON response contanting track details.
+        """
         return self.make_request(f"/v1/tracks/{track_id}")
 
     def get_artist(self, artist_id: str):
+        """Retrieve information about an artist.
+
+        Args:
+            artist_id (str): Spotify artist ID.
+
+        Returns:
+            dict: JSON response containing artist details.
+        """
         return self.make_request(f"/v1/artists/{artist_id}")
 
     def get_album(self, album_id: str):
+        """Retrieve information about an album.
+
+        Args:
+            album_id (str): Spotify album ID.
+
+        Returns:
+            dict: JSON response containing album details.
+        """
         return self.make_request(f"/v1/albums/{album_id}")
