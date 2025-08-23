@@ -18,10 +18,7 @@ def test_init_raises_when_missing_env(monkeypatch):
         SpotifyAPI()
 
 
-def test_init_builds_base64_correctly(monkeypatch):
-    monkeypatch.setenv("CLIENT_ID", "dummy_id")
-    monkeypatch.setenv("CLIENT_SECRET", "dummy_secret")
-
+def test_init_builds_base64_correctly():
     client = SpotifyAPI()
 
     expected = base64.b64encode(b"dummy_id:dummy_secret").decode()
