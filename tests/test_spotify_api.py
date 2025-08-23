@@ -74,3 +74,27 @@ def test_get_headers_with_token():
     headers = client.get_headers()
     assert headers["Authorization"] == "Bearer dummy"
     assert headers["Content-Type"] == "application/json"
+
+
+def test_make_request_json_response():
+    pass
+
+
+def test_make_request_failed():
+    pass
+
+
+def test_search():
+    pass
+
+
+def test_get_track():
+    pass
+
+
+def test_get_artist():
+    pass
+
+
+def test_get_album():
+    pass
