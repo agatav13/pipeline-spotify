@@ -76,25 +76,98 @@ def test_get_headers_with_token():
     assert headers["Content-Type"] == "application/json"
 
 
-def test_make_request_json_response():
-    pass
+def test_make_request_json_response(mocker):
+    client = SpotifyAPI()
+
+    mocker.patch.object(
+        client, "get_headers", return_value={"Authorizaiton": "Bearer dummy"}
+    )
+
+    fake_response = mocker.Mock()
+    fake_response.status_code = 200
+    fake_response.json.return_value = {"name": "Taylor Swift"}
+
+    mocker.patch("requests.get", return_value=fake_response)
+
+    result = client.make_request("/v1/tracks/123")
+
+    assert result == {"name": "Taylor Swift"}
 
 
-def test_make_request_failed():
-    pass
+def test_make_request_failed(mocker):
+    client = SpotifyAPI()
+
+    mocker.patch.object(
+        client, "get_headers", return_value={"Authorization": "Bearer dummy"}
+    )
+
+    fake_response = mocker.Mock()
+    fake_response.status_code = 400
+    fake_response.text = "dummy_text"
+
+    mocker.patch("requests.get", return_value=fake_response)
+
+    with pytest.raises(
+        RuntimeError, match=re.escape("Failed to make request: 400 dummy_text")
+    ):
+        client.make_request("/dummy_url")
 
 
-def test_search():
-    pass
+def test_search(mocker):
+    client = SpotifyAPI()
+
+    fake_result = {"tracks": {"items": ["dummy_tracks"]}}
+    mock_make_request = mocker.patch.object(
+        client, "make_request", return_value=fake_result
+    )
+
+    result = client.search("Taylor Swift", ["track", "album"], limit=5, market="US")
+
+    mock_make_request.assert_called_once_with(
+        "/v1/search",
+        params={"q": "Taylor Swift", "type": "track,album", "limit": 5, "market": "US"},
+    )
+
+    assert result == fake_result
 
 
-def test_get_track():
-    pass
+def test_get_track(mocker):
+    client = SpotifyAPI()
+
+    fake_result = {"id": "track123"}
+    mock_make_request = mocker.patch.object(
+        client, "make_request", return_value=fake_result
+    )
+
+    result = client.get_track("track123")
+
+    mock_make_request.assert_called_once_with("/v1/tracks/track123")
+    assert result == fake_result
 
 
-def test_get_artist():
-    pass
+def test_get_artist(mocker):
+    client = SpotifyAPI()
+
+    fake_result = {"id": "artist123"}
+    mock_make_request = mocker.patch.object(
+        client, "make_request", return_value=fake_result
+    )
+
+    result = client.get_artist("artist123")
+
+    mock_make_request.assert_called_once_with("/v1/artists/artist123")
+    assert result == fake_result
 
 
-def test_get_album():
-    pass
+def test_get_album(mocker):
+    client = SpotifyAPI()
+
+    fake_result = {"id": "album123"}
+    mock_make_result = mocker.patch.object(
+        client, "make_request", return_value=fake_result
+    )
+
+    result = client.get_album("album123")
+
+    mock_make_result.assert_called_once_with("/v1/albums/album123")
+    assert result == fake_result
