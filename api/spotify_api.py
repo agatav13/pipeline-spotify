@@ -18,8 +18,8 @@ class SpotifyAPI:
     albums and search.
     """
 
-    TOKEN_URL: str = "https://accounts.spotify.com/api/token"
-    BASE_URL: str = "https://api.spotify.com"
+    TOKEN_URL: str = "https://accounts.spotify.com/api/token"  # noqa: S105
+    BASE_URL: str = "https://api.spotify.com"  # noqa: S105
 
     def __init__(self) -> None:
         """Initialize the SpotifyAPI client.
