@@ -3,7 +3,8 @@
 Defines the Pipeline class for managing and running a list of PipelineStep objects.
 """
 
-from typing import List, Any
+from typing import Any
+
 from .base import PipelineStep
 
 
@@ -14,13 +15,13 @@ class Pipeline:
         steps (List[PipelineStep]): List of pipeline steps to execute.
     """
 
-    def __init__(self, steps: List[PipelineStep]) -> None:
+    def __init__(self, steps: list[PipelineStep]) -> None:
         """Initialize the Pipeline with a list of steps.
 
         Args:
             steps (List[PipelineStep]): List of pipeline steps.
         """
-        self.steps: List[PipelineStep] = steps
+        self.steps: list[PipelineStep] = steps
 
     def run(self, data: Any = None) -> Any:
         """Run all pipeline steps in sequence.

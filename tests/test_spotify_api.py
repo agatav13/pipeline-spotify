@@ -5,8 +5,9 @@ Covering authentication, requests, and resource retrieval.
 
 import base64
 import re
-import pytest
 from typing import Any
+
+import pytest
 
 from api.spotify_api import SpotifyAPI
 
