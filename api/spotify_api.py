@@ -1,8 +1,11 @@
-"""Class for handling Spotify API."""
+"""Class for handling Spotify API.
+
+Provides the SpotifyAPI client for authentication and resource access.
+"""
 
 import base64
 import os
-from typing import Any
+from typing import Any, Dict, Optional, List
 
 import requests
 from dotenv import load_dotenv
@@ -14,7 +17,7 @@ class SpotifyAPI:
     """Client for interacting with the Spotify Web API.
 
     This class handles authentication and provides helper methods
-    for accessing common Spotify endpoints such as trucks, artists,
+    for accessing common Spotify endpoints such as tracks, artists,
     albums and search.
     """
 
@@ -31,8 +34,8 @@ class SpotifyAPI:
         Raises:
             ValueError: If `CLIENT_ID` or `CLIENT_SECRET` are missing.
         """
-        self.client_id: str | None = os.getenv("CLIENT_ID")
-        self.client_secret: str | None = os.getenv("CLIENT_SECRET")
+        self.client_id: Optional[str] = os.getenv("CLIENT_ID")
+        self.client_secret: Optional[str] = os.getenv("CLIENT_SECRET")
 
         if not self.client_id or not self.client_secret:
             raise ValueError(
@@ -42,8 +45,8 @@ class SpotifyAPI:
         creds: str = f"{self.client_id}:{self.client_secret}"
         self.client_creds_b64: str = base64.b64encode(creds.encode()).decode()
 
-        self.access_token: str | None = None
-        self.expires_in: int | None = None
+        self.access_token: Optional[str] = None
+        self.expires_in: Optional[int] = None
 
     def get_token(self) -> str:
         """Obtain an access token using Client Credentials Flow.
@@ -54,8 +57,8 @@ class SpotifyAPI:
         Raises:
             RuntimeError: If the token request fails.
         """
-        token_data: dict[str, str] = {"grant_type": "client_credentials"}
-        token_headers: dict[str, str] = {
+        token_data: Dict[str, str] = {"grant_type": "client_credentials"}
+        token_headers: Dict[str, str] = {
             "Authorization": f"Basic {self.client_creds_b64}",
             "Content-Type": "application/x-www-form-urlencoded",
         }
@@ -73,11 +76,11 @@ class SpotifyAPI:
 
         return self.access_token
 
-    def get_headers(self) -> dict[str, str]:
+    def get_headers(self) -> Dict[str, str]:
         """Build headers for authorized Spotify API requests.
 
         Returns:
-            dict: Headers including the Bearer access token.
+            Dict[str, str]: Headers including the Bearer access token.
 
         Raises:
             RuntimeError: If `get_token()` has not been called.
@@ -89,21 +92,21 @@ class SpotifyAPI:
             "Content-Type": "application/json",
         }
 
-    def make_request(self, endpoint: str, params: dict | None = None) -> dict[str, Any]:
+    def make_request(self, endpoint: str, params: Optional[Dict] = None) -> Dict[str, Any]:
         """Make a GET request to the Spotify API.
 
         Args:
-            endpoint (str): API endpoint (e.g., "/v1/tracks/{id}).
+            endpoint (str): API endpoint (e.g., "/v1/tracks/{id}").
             params (dict | None): Optional query parameters.
 
         Returns:
-            dict: JSON response from the Spotify API.
+            Dict[str, Any]: JSON response from the Spotify API.
 
         Raises:
             RuntimeError: If the request fails.
         """
-        url = self.BASE_URL + endpoint
-        headers = self.get_headers()
+        url: str = self.BASE_URL + endpoint
+        headers: Dict[str, str] = self.get_headers()
 
         req = requests.get(url=url, headers=headers, params=params, timeout=10)
 
@@ -115,26 +118,26 @@ class SpotifyAPI:
     def search(
         self,
         query: str,
-        search_type: list[str],
+        search_type: List[str],
         limit: int = 10,
-        market: str | None = None,
-    ) -> dict[str, None]:
+        market: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """Search for tracks, artists, albums or playlists.
 
         Args:
             query (str): Search query string (e.g., "Taylor Swift").
-            search_type (list[str]): Types to search (e.g., ["track", "album"]).
+            search_type (List[str]): Types to search (e.g., ["track", "album"]).
             limit (int, optional): Number of results to return. Defaults to 10.
             market (str | None, optional): Market code (e.g., "US", "PL").
                 Defaults to None.
 
         Returns:
-            dict: JSON response containing search results.
+            Dict[str, Any]: JSON response containing search results.
         """
-        search_type = ",".join(search_type)
-        params = {
+        search_type_str: str = ",".join(search_type)
+        params: Dict[str, Any] = {
             "q": query,
-            "type": search_type,
+            "type": search_type_str,
             "limit": limit,
         }
 
@@ -143,35 +146,35 @@ class SpotifyAPI:
 
         return self.make_request("/v1/search", params=params)
 
-    def get_track(self, track_id: str):
+    def get_track(self, track_id: str) -> Dict[str, Any]:
         """Retrieve information about a track.
 
         Args:
             track_id (str): Spotify track ID.
 
         Returns:
-            dict: JSON response contanting track details.
+            Dict[str, Any]: JSON response containing track details.
         """
         return self.make_request(f"/v1/tracks/{track_id}")
 
-    def get_artist(self, artist_id: str):
+    def get_artist(self, artist_id: str) -> Dict[str, Any]:
         """Retrieve information about an artist.
 
         Args:
             artist_id (str): Spotify artist ID.
 
         Returns:
-            dict: JSON response containing artist details.
+            Dict[str, Any]: JSON response containing artist details.
         """
         return self.make_request(f"/v1/artists/{artist_id}")
 
-    def get_album(self, album_id: str):
+    def get_album(self, album_id: str) -> Dict[str, Any]:
         """Retrieve information about an album.
 
         Args:
             album_id (str): Spotify album ID.
 
         Returns:
-            dict: JSON response containing album details.
+            Dict[str, Any]: JSON response containing album details.
         """
         return self.make_request(f"/v1/albums/{album_id}")

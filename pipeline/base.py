@@ -4,6 +4,7 @@ Defines abstract base classes for pipeline step implementations.
 """
 
 from abc import ABC, abstractmethod
+from typing import Any
 
 
 class PipelineStep(ABC):
@@ -13,13 +14,13 @@ class PipelineStep(ABC):
     """
 
     @abstractmethod
-    def run(self, data):
+    def run(self, data: Any) -> Any:
         """Run the pipeline step.
 
         Args:
-            data: Input data for the pipeline step.
+            data (Any): Input data for the pipeline step.
 
         Returns:
-            Any: Output data
+            Any: Output data after processing.
         """
         pass

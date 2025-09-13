@@ -5,19 +5,19 @@ Covering authentication, requests, and resource retrieval.
 
 import base64
 import re
-
 import pytest
+from typing import Any
 
 from api.spotify_api import SpotifyAPI
 
 
-def test_init_raises_when_missing_env(monkeypatch):
+def test_init_raises_when_missing_env(monkeypatch: Any) -> None:
     """Test error when required environment variables are missing.
 
     Ensures SpotifyAPI raises ValueError if CLIENT_ID or CLIENT_SECRET are not set.
 
     Args:
-        monkeypatch: pytest fixture to modify environment variables.
+        monkeypatch (pytest.MonkeyPatch): Fixture to modify environment variables.
 
     Raises:
         ValueError: If CLIENT_ID or CLIENT_SECRET are missing.
@@ -33,7 +33,7 @@ def test_init_raises_when_missing_env(monkeypatch):
         SpotifyAPI()
 
 
-def test_init_builds_base64_correctly():
+def test_init_builds_base64_correctly() -> None:
     """Test that SpotifyAPI correctly builds the base64-encoded credentials.
 
     Asserts:
@@ -45,11 +45,11 @@ def test_init_builds_base64_correctly():
     assert client.client_creds_b64 == expected
 
 
-def test_get_token_success(mocker):
+def test_get_token_success(mocker: Any) -> None:
     """Test successful retrieval of access token from Spotify API.
 
     Args:
-        mocker: pytest-mock fixture to mock requests.
+        mocker (Any): pytest-mock fixture to mock requests.
 
     Asserts:
         The returned token, access_token, and expires_in are set correctly.
@@ -72,11 +72,11 @@ def test_get_token_success(mocker):
     assert client.expires_in == 3600
 
 
-def test_get_token_failure(mocker):
+def test_get_token_failure(mocker: Any) -> None:
     """Test that SpotifyAPI raises RuntimeError when token retrieval fails.
 
     Args:
-        mocker: pytest-mock fixture to mock requests.
+        mocker (Any): pytest-mock fixture to mock requests.
 
     Raises:
         RuntimeError: If the token request fails.
@@ -95,7 +95,7 @@ def test_get_token_failure(mocker):
         client.get_token()
 
 
-def test_get_headers_without_token():
+def test_get_headers_without_token() -> None:
     """Test that get_headers raises RuntimeError if access token is missing.
 
     Raises:
@@ -108,7 +108,7 @@ def test_get_headers_without_token():
         client.get_headers()
 
 
-def test_get_headers_with_token():
+def test_get_headers_with_token() -> None:
     """Test that get_headers returns correct headers when access token is set.
 
     Asserts:
@@ -122,11 +122,11 @@ def test_get_headers_with_token():
     assert headers["Content-Type"] == "application/json"
 
 
-def test_make_request_json_response(mocker):
+def test_make_request_json_response(mocker: Any) -> None:
     """Test that make_request returns JSON response for successful GET request.
 
     Args:
-        mocker: pytest-mock fixture to mock requests.
+        mocker (Any): pytest-mock fixture to mock requests.
 
     Asserts:
         The returned result matches the expected JSON.
@@ -148,11 +148,11 @@ def test_make_request_json_response(mocker):
     assert result == {"name": "Taylor Swift"}
 
 
-def test_make_request_failed(mocker):
+def test_make_request_failed(mocker: Any) -> None:
     """Test that make_request raises RuntimeError for failed GET request.
 
     Args:
-        mocker: pytest-mock fixture to mock requests.
+        mocker (Any): pytest-mock fixture to mock requests.
 
     Raises:
         RuntimeError: If the GET request fails.
@@ -175,11 +175,11 @@ def test_make_request_failed(mocker):
         client.make_request("/dummy_url")
 
 
-def test_search(mocker):
+def test_search(mocker: Any) -> None:
     """Test the search method for correct parameter passing and result.
 
     Args:
-        mocker: pytest-mock fixture to mock make_request.
+        mocker (Any): pytest-mock fixture to mock make_request.
 
     Asserts:
         make_request is called with correct parameters and result matches expected.
@@ -201,11 +201,11 @@ def test_search(mocker):
     assert result == fake_result
 
 
-def test_get_track(mocker):
+def test_get_track(mocker: Any) -> None:
     """Test the get_track method for correct endpoint and result.
 
     Args:
-        mocker: pytest-mock fixture to mock make_request.
+        mocker (Any): pytest-mock fixture to mock make_request.
 
     Asserts:
         make_request is called with correct endpoint and result matches expected.
@@ -223,11 +223,11 @@ def test_get_track(mocker):
     assert result == fake_result
 
 
-def test_get_artist(mocker):
+def test_get_artist(mocker: Any) -> None:
     """Test the get_artist method for correct endpoint and result.
 
     Args:
-        mocker: pytest-mock fixture to mock make_request.
+        mocker (Any): pytest-mock fixture to mock make_request.
 
     Asserts:
         make_request is called with correct endpoint and result matches expected.
@@ -245,11 +245,11 @@ def test_get_artist(mocker):
     assert result == fake_result
 
 
-def test_get_album(mocker):
+def test_get_album(mocker: Any) -> None:
     """Test the get_album method for correct endpoint and result.
 
     Args:
-        mocker: pytest-mock fixture to mock make_request.
+        mocker (Any): pytest-mock fixture to mock make_request.
 
     Asserts:
         make_request is called with correct endpoint and result matches expected.
