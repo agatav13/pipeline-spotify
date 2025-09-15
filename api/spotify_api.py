@@ -80,7 +80,7 @@ class SpotifyAPI:
         """Build headers for authorized Spotify API requests.
 
         Returns:
-            Dict[str, str]: Headers including the Bearer access token.
+            dict[str, str]: Headers including the Bearer access token.
 
         Raises:
             RuntimeError: If `get_token()` has not been called.
@@ -100,7 +100,7 @@ class SpotifyAPI:
             params (dict | None): Optional query parameters.
 
         Returns:
-            Dict[str, Any]: JSON response from the Spotify API.
+            dict[str, Any]: JSON response from the Spotify API.
 
         Raises:
             RuntimeError: If the request fails.
@@ -126,13 +126,13 @@ class SpotifyAPI:
 
         Args:
             query (str): Search query string (e.g., "Taylor Swift").
-            search_type (List[str]): Types to search (e.g., ["track", "album"]).
+            search_type (list[str]): Types to search (e.g., ["track", "album"]).
             limit (int, optional): Number of results to return. Defaults to 10.
             market (str | None, optional): Market code (e.g., "US", "PL").
                 Defaults to None.
 
         Returns:
-            Dict[str, Any]: JSON response containing search results.
+            dict[str, Any]: JSON response containing search results.
         """
         search_type_str: str = ",".join(search_type)
         params: dict[str, Any] = {
@@ -153,7 +153,7 @@ class SpotifyAPI:
             track_id (str): Spotify track ID.
 
         Returns:
-            Dict[str, Any]: JSON response containing track details.
+            dict[str, Any]: JSON response containing track details.
         """
         return self.make_request(f"/v1/tracks/{track_id}")
 
@@ -164,7 +164,7 @@ class SpotifyAPI:
             artist_id (str): Spotify artist ID.
 
         Returns:
-            Dict[str, Any]: JSON response containing artist details.
+            dict[str, Any]: JSON response containing artist details.
         """
         return self.make_request(f"/v1/artists/{artist_id}")
 
@@ -175,6 +175,24 @@ class SpotifyAPI:
             album_id (str): Spotify album ID.
 
         Returns:
-            Dict[str, Any]: JSON response containing album details.
+            dict[str, Any]: JSON response containing album details.
         """
         return self.make_request(f"/v1/albums/{album_id}")
+
+    def get_artist_top_tracks(
+        self, artist_id: str, market: str | None = "US"
+    ) -> dict[str, Any]:
+        """
+        Retrieve the top tracks for a given artist.
+
+        Args:
+            artist_id (str): Spotify artist ID.
+            market (str | None, optional): Market code (e.g., "US", "PL").
+                Defaults to "US".
+
+        Returns:
+            dict[str, Any]: JSON response containing the artist's top tracks.
+        """
+        return self.make_request(
+            f"/v1/artists/{artist_id}/top-tracks", params={"market": market}
+        )

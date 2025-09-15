@@ -1,6 +1,11 @@
-""""""
+"""Extract step for pulling raw data from the Spotify API.
 
+This module defines the ExtractSpotify class, which provides methods
+to fetch artist, track, and album data from the Spotify API for use
+in data pipelines.
+"""
 
+from typing import Any
 from api.spotify_api import SpotifyAPI
 
 from .base import PipelineStep
@@ -15,7 +20,14 @@ class ExtractSpotify(PipelineStep):
         track_id: str | None = None,
         album_id: str | None = None,
     ) -> None:
-        """"""
+        """
+        Initialize the ExtractSpotify step.
+
+        Args:
+            artist_name (str | None, optional): Name of the artist to fetch.
+            track_id (str | None, optional): ID of the track to fetch.
+            album_id (str | None, optional): ID of the album to fetch.
+        """
         self.artist_name = artist_name
         self.track_id = track_id
         self.album_id = album_id
@@ -24,8 +36,18 @@ class ExtractSpotify(PipelineStep):
 
     def fetch_artist(
         self, artist_name: str, limit: int = 10, market: str | None = None
-    ) -> list[dict]:
-        """"""
+    ) -> list[dict[str, Any]]:
+        """
+        Fetch artist information from Spotify by name.
+
+        Args:
+            artist_name (str): Name of the artist to search for.
+            limit (int, optional): Number of results to return. Defaults to 10.
+            market (str | None, optional): Market code. Defaults to None.
+
+        Returns:
+            list[dict[str, Any]]: List of artist details.
+        """
         result = self.client.search(
             artist_name, search_type=["artist"], limit=limit, market=market
         )
@@ -44,15 +66,40 @@ class ExtractSpotify(PipelineStep):
 
     def fetch_track_by_artist_name(
         self, artist_name: str, market: str | None = "US"
-    ) -> list[dict]:
+    ) -> list[dict[str, Any]]:
+        """
+        Fetch top tracks for an artist by name.
+
+        Args:
+            artist_name (str): Name of the artist.
+            market (str | None, optional): Market code. Defaults to "US".
+
+        Returns:
+            list[dict[str, Any]]: List of track details.
+        """
         artist_result = self.client.search(
-            artist_name, ["artists"], limit=1, market=market
+            artist_name, ["artist"], limit=1, market=market
         )
         items = artist_result["artists"]["items"]
         if not items:
             return []
 
         artist_id = items[0]["id"]
+
+        top_tracks = self.client.get_artist_top_tracks(artist_id, market=market)
+
+        tracks = []
+        for t in top_tracks["tracks"]:
+            tracks.append(
+                {
+                    "id": t["id"],
+                    "name": t["name"],
+                    "popularity": t["popularity"],
+                    "album": t["album"]["name"],
+                    "release_date": t["album"]["release_date"],
+                }
+            )
+        return tracks
 
     def fetch_track(
         self,
@@ -62,9 +109,23 @@ class ExtractSpotify(PipelineStep):
         track_name: str | None = None,  # for search by keyword
         limit: int = 10,
         market: str | None = "US",
-    ) -> list[dict]:
-        """"""
+    ) -> list[dict[str, Any]]:
+        """
+        Fetch track information by artist name, track ID, or track name.
 
+        Args:
+            artist_name (str | None, optional): Name of the artist.
+            track_id (str | None, optional): ID of the track.
+            track_name (str | None, optional): Name of the track.
+            limit (int, optional): Number of results for search by name. Defaults to 10.
+            market (str | None, optional): Market code. Defaults to "US".
+
+        Returns:
+            list[dict[str, Any]]: List of track details.
+
+        Raises:
+            ValueError: If more than one or none of the parameters are provided.
+        """
         provided = [artist_name, track_id, track_name]
         if sum(x is not None for x in provided) != 1:
             raise ValueError("Provide either artist_name, track_id or track_title.")
