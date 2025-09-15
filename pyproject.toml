@@ -44,6 +44,8 @@ lint.ignore = [
     "S101",
 ]
 
+lint.per-file-ignores = { "__init__.py" = ["D104"], "tests/*.py" = ["D100", "D101", "D102", "D103"] }
+
 # Max complexity
 lint.mccabe.max-complexity = 10
 
