@@ -1,11 +1,14 @@
-from pipeline.pipeline import Pipeline
-from pipeline.extract import ExtractDummy
-from pipeline.transform import TransformDummy
+""""""
+
+from pipeline.extract import ExtractSpotify
 from pipeline.load import LoadDummy
+from pipeline.pipeline import Pipeline
+from pipeline.transform import TransformDummy
 
 
 def main():
-    etl = Pipeline([ExtractDummy(), TransformDummy(), LoadDummy()])
+    """"""
+    etl = Pipeline([ExtractSpotify(), TransformDummy(), LoadDummy()])
     etl.run()
 
 
