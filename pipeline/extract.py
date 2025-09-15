@@ -143,7 +143,7 @@ class ExtractSpotify(PipelineStep):
         *,
         artist_name: str | None = None,  # for top tracks
         track_id: str | None = None,
-        track_name: str | None = None,   # for search by keyword
+        track_name: str | None = None,  # for search by keyword
         limit: int = 10,
         market: str | None = "US",
     ) -> list[dict[str, Any]]:
@@ -176,9 +176,124 @@ class ExtractSpotify(PipelineStep):
         if track_name:
             return self.fetch_track_by_name(track_name, limit=limit, market=market)
 
-    def fetch_album(self, album_id: str) -> list[dict[str, Any]]:
-        # TODO: Implement fetching album data
-        pass
+    def fetch_album_by_artist_name(
+        self, artist_name: str, limit: int = 10, market: str | None = "US"
+    ) -> list[dict[str, Any]]:
+        """Fetch top albums for an artist by name.
+
+        Args:
+            artist_name (str): Name of the artist.
+            limit (int, optional): Maximum number of albums to return. Defaults to 10.
+            market (str | None, optional): Market code. Defaults to "US".
+
+        Returns:
+            list[dict[str, Any]]: List of album details.
+        """
+        artist_result = self.client.search(
+            artist_name, ["artist"], limit=1, market=market
+        )
+        items = artist_result["artists"]["items"]
+        if not items:
+            return []
+
+        artist_id = items[0]["id"]
+        albums_result = self.client.get_artist_albums(
+            artist_id, market=market, limit=limit
+        )
+
+        return [
+            {
+                "id": a["id"],
+                "name": a["name"],
+                "release_date": a["release_date"],
+                "total_tracks": a["total_tracks"],
+                "album_type": a["album_type"],
+            }
+            for a in albums_result["items"]
+        ]
+
+    def fetch_album_by_id(self, album_id: str) -> list[dict[str, Any]]:
+        """Fetch a single album by its Spotify ID.
+
+        Args:
+            album_id (str): Spotify album ID.
+
+        Returns:
+            list[dict[str, Any]]: List containing one album detail dictionary.
+        """
+        result = self.client.get_album(album_id)
+        album = {
+            "id": result["id"],
+            "name": result["name"],
+            "release_date": result["release_date"],
+            "total_tracks": result["total_tracks"],
+            "album_type": result["album_type"],
+        }
+        return [album]
+
+    def fetch_album_by_name(
+        self, album_name: str, limit: int = 10, market: str | None = "US"
+    ) -> list[dict[str, Any]]:
+        """Search albums by name keyword.
+
+        Args:
+            album_name (str): Album name keyword.
+            limit (int, optional): Maximum number of albums to return. Defaults to 10.
+            market (str | None, optional): Market code. Defaults to "US".
+
+        Returns:
+            list[dict[str, Any]]: List of album details.
+        """
+        result = self.client.search(album_name, ["album"], limit=limit, market=market)
+        return [
+            {
+                "id": a["id"],
+                "name": a["name"],
+                "release_date": a["release_date"],
+                "total_tracks": a["total_tracks"],
+                "album_type": a["album_type"],
+            }
+            for a in result["albums"]["items"]
+        ]
+
+    def fetch_album(
+        self,
+        *,
+        artist_name: str | None = None,
+        album_id: str | None = None,
+        album_name: str | None = None,
+        limit: int = 10,
+        market: str | None = "US",
+    ) -> list[dict[str, Any]]:
+        """Fetch album information using one of the parameters:
+        artist_name (top albums), album_id, or album_name (search).
+
+        Args:
+            artist_name (str | None, optional): Name of the artist (for top albums).
+            album_id (str | None, optional): Spotify album ID.
+            album_name (str | None, optional): Name keyword for album search.
+            limit (int): Maximum number of results when searching by name.
+            market (str | None, optional): Market code. Defaults to "US".
+
+        Returns:
+            list[dict[str, Any]]: List of album details.
+
+        Raises:
+            ValueError: If none or more than one parameter is provided.
+        """
+        provided = [artist_name, album_id, album_name]
+        if sum(x is not None for x in provided) != 1:
+            raise ValueError(
+                "Provide exactly one of artist_name, album_id, or album_name."
+            )
+
+        if artist_name:
+            return self.fetch_album_by_artist_name(
+                artist_name, limit=limit, market=market
+            )
+        if album_id:
+            return self.fetch_album_by_id(album_id)
+        return self.fetch_album_by_name(album_name, limit=limit, market=market)
 
     def run(self, data=None):
         if self.artist_name:
