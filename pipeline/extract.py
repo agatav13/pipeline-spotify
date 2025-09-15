@@ -164,6 +164,7 @@ class ExtractSpotify(PipelineStep):
             return self.fetch_track_by_id(track_id)
         if track_name:
             return self.fetch_track_by_name(track_name, limit=limit, market=market)
+        return None
 
     def fetch_album_by_artist_name(
         self, artist_name: str, limit: int = 10, market: str | None = "US"
@@ -300,12 +301,13 @@ class ExtractSpotify(PipelineStep):
 
         Args:
             entity_type (str): One of "artist", "track", or "album".
-            Other parameters depend on entity_type:
-                - artist: artist_name
-                - track: track_id, track_name, or artist_name (for top tracks)
-                - album: album_id, album_name, or artist_name (for top albums)
-            limit (int): Maximum number of results.
-            market (str | None): Market code.
+            artist_name (str | None, optional): Name of the artist.
+            track_id (str | None, optional): Spotify track ID.
+            track_name (str | None, optional): Name keyword for track search.
+            album_id (str | None, optional): Spotify album ID.
+            album_name (str | None, optional): Name keyword for album search.
+            limit (int, optional): Maximum number of results to return. Defaults to 10.
+            market (str | None, optional): Market code. Defaults to "US".
 
         Returns:
             list[dict[str, Any]]: Fetched data.
@@ -321,7 +323,7 @@ class ExtractSpotify(PipelineStep):
         if entity_type == "track":
             if not any([track_id, track_name, artist_name]):
                 raise ValueError(
-                    "track_id, track_name, or artist_name is required for fetching tracks"
+                    "track_id, track_name, or artist_name is required for fetching tracks"  # noqa: E501
                 )
             return self.fetch_track(
                 artist_name=artist_name,
@@ -334,7 +336,7 @@ class ExtractSpotify(PipelineStep):
         if entity_type == "album":
             if not any([album_id, album_name, artist_name]):
                 raise ValueError(
-                    "album_id, album_name, or artist_name is required for fetching albums"
+                    "album_id, album_name, or artist_name is required for fetching albums"  # noqa: E501
                 )
             return self.fetch_album(
                 artist_name=artist_name,

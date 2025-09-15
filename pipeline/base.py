@@ -1,6 +1,6 @@
-"""Base classes for pipeline steps.
+"""Base class for pipeline steps.
 
-Defines abstract base classes for pipeline step implementations.
+Defines abstract base class for pipeline step implementations.
 """
 
 from abc import ABC, abstractmethod
