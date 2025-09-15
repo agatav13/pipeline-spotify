@@ -182,8 +182,7 @@ class SpotifyAPI:
     def get_artist_top_tracks(
         self, artist_id: str, market: str | None = "US"
     ) -> dict[str, Any]:
-        """
-        Retrieve the top tracks for a given artist.
+        """Retrieve the top tracks for a given artist.
 
         Args:
             artist_id (str): Spotify artist ID.
