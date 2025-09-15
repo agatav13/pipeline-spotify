@@ -15,22 +15,11 @@ from .base import PipelineStep
 class ExtractSpotify(PipelineStep):
     """Pipeline step to extract raw data from Spotify."""
 
-    def __init__(
-        self,
-        artist_name: str | None = None,
-        track_id: str | None = None,
-        album_id: str | None = None,
-    ) -> None:
+    def __init__(self) -> None:
         """Initialize the ExtractSpotify step.
 
-        Args:
-            artist_name (str | None, optional): Name of the artist to fetch.
-            track_id (str | None, optional): ID of the track to fetch.
-            album_id (str | None, optional): ID of the album to fetch.
+        The client is authenticated here.
         """
-        self.artist_name = artist_name
-        self.track_id = track_id
-        self.album_id = album_id
         self.client = SpotifyAPI()
         self.client.get_token()
 
@@ -295,11 +284,64 @@ class ExtractSpotify(PipelineStep):
             return self.fetch_album_by_id(album_id)
         return self.fetch_album_by_name(album_name, limit=limit, market=market)
 
-    def run(self, data=None):
-        if self.artist_name:
-            return self.fetch_artist(self.artist_name)
-        if self.track_id:
-            return self.fetch_track(track_id=self.track_id)
-        if self.album_id:
-            return self.fetch_album(self.album_id)
-        raise ValueError("No artist, track or album specified.")
+    def run(
+        self,
+        entity_type: str,  # "artist", "track", or "album"
+        *,
+        artist_name: str | None = None,
+        track_id: str | None = None,
+        track_name: str | None = None,
+        album_id: str | None = None,
+        album_name: str | None = None,
+        limit: int = 10,
+        market: str | None = "US",
+    ) -> list[dict[str, Any]]:
+        """Unified run method to fetch data for the specified entity type.
+
+        Args:
+            entity_type (str): One of "artist", "track", or "album".
+            Other parameters depend on entity_type:
+                - artist: artist_name
+                - track: track_id, track_name, or artist_name (for top tracks)
+                - album: album_id, album_name, or artist_name (for top albums)
+            limit (int): Maximum number of results.
+            market (str | None): Market code.
+
+        Returns:
+            list[dict[str, Any]]: Fetched data.
+
+        Raises:
+            ValueError: If required parameters for the entity type are missing.
+        """
+        if entity_type == "artist":
+            if not artist_name:
+                raise ValueError("artist_name is required for fetching artist info")
+            return self.fetch_artist(artist_name, limit=limit, market=market)
+
+        if entity_type == "track":
+            if not any([track_id, track_name, artist_name]):
+                raise ValueError(
+                    "track_id, track_name, or artist_name is required for fetching tracks"
+                )
+            return self.fetch_track(
+                artist_name=artist_name,
+                track_id=track_id,
+                track_name=track_name,
+                limit=limit,
+                market=market,
+            )
+
+        if entity_type == "album":
+            if not any([album_id, album_name, artist_name]):
+                raise ValueError(
+                    "album_id, album_name, or artist_name is required for fetching albums"
+                )
+            return self.fetch_album(
+                artist_name=artist_name,
+                album_id=album_id,
+                album_name=album_name,
+                limit=limit,
+                market=market,
+            )
+
+        raise ValueError(f"Unknown entity_type: {entity_type}")
