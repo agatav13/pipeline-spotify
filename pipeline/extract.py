@@ -101,6 +101,35 @@ class ExtractSpotify(PipelineStep):
             )
         return tracks
 
+    def fetch_track_by_id(self, track_id: str) -> list[dict[str, Any]]:
+        result = self.client.get_track(track_id)
+        track = {
+            "id": result["id"],
+            "name": result["name"],
+            "popularity": result["popularity"],
+            "album": result["album"]["name"],
+            "release_date": result["album"]["release_date"],
+        }
+        return [track]
+
+    def fetch_track_by_name(
+        self, track_name, limit: int = 10, market: str | None = "US"
+    ) -> list[dict[str, Any]]:
+        result = self.client.search(track_name, ["track"], limit=limit, market=market)
+        items = result["tracks"]["items"]
+        tracks = []
+        for track in items:
+            tracks.append(
+                {
+                    "id": track["id"],
+                    "name": track["name"],
+                    "popularity": track["popularity"],
+                    "album": track["album"]["name"],
+                    "release_date": track["album"]["release_date"],
+                }
+            )
+        return tracks
+
     def fetch_track(
         self,
         *,
