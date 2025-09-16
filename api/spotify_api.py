@@ -195,3 +195,23 @@ class SpotifyAPI:
         return self.make_request(
             f"/v1/artists/{artist_id}/top-tracks", params={"market": market}
         )
+
+    def get_artist_top_albums(
+        self, artist_id: str, limit: int = 10, market: str | None = "US"
+    ) -> dict[str, Any]:
+        """Retrieve the top albums for a given artist.
+
+        Args:
+            artist_id (str): Spotify artist ID.
+            limit (int, optional): Maximum of albums that will be returned.
+                Defaults to 10.
+            market (str | None, optional): Market code (e.g., "US", "PL").
+                Defaults to "US".
+
+        Returns:
+            dict[str, Any]: JSON response containing the artist's top albums.
+        """
+        return self.make_request(
+            f"/v1/artists/{artist_id}/albums",
+            params={"include_groups": "album,single", "market": market, "limit": limit},
+        )

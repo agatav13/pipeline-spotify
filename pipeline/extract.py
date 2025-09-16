@@ -187,8 +187,8 @@ class ExtractSpotify(PipelineStep):
             return []
 
         artist_id = items[0]["id"]
-        albums_result = self.client.get_artist_albums(
-            artist_id, market=market, limit=limit
+        albums_result = self.client.get_artist_top_albums(
+            artist_id, limit=limit, market=market
         )
 
         return [
