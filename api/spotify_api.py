@@ -1,8 +1,3 @@
-"""Class for handling Spotify API.
-
-Provides the SpotifyAPI client for authentication and resource access.
-"""
-
 import base64
 import os
 from typing import Any
@@ -14,26 +9,10 @@ load_dotenv()
 
 
 class SpotifyAPI:
-    """Client for interacting with the Spotify Web API.
-
-    This class handles authentication and provides helper methods
-    for accessing common Spotify endpoints such as tracks, artists,
-    albums and search.
-    """
-
     TOKEN_URL: str = "https://accounts.spotify.com/api/token"  # noqa: S105
-    BASE_URL: str = "https://api.spotify.com"  # noqa: S105
+    BASE_URL: str = "https://api.spotify.com/v1"  # noqa: S105
 
     def __init__(self) -> None:
-        """Initialize the SpotifyAPI client.
-
-        Loads client credentials from environment variables
-        (`CLIENT_ID` and `CLIENT_SECRET`) and prepares the base64
-        encoded credentials for authentication.
-
-        Raises:
-            ValueError: If `CLIENT_ID` or `CLIENT_SECRET` are missing.
-        """
         self.client_id: str | None = os.getenv("CLIENT_ID")
         self.client_secret: str | None = os.getenv("CLIENT_SECRET")
 
@@ -49,14 +28,6 @@ class SpotifyAPI:
         self.expires_in: int | None = None
 
     def get_token(self) -> str:
-        """Obtain an access token using Client Credentials Flow.
-
-        Returns:
-            str: Access token string.
-
-        Raises:
-            RuntimeError: If the token request fails.
-        """
         token_data: dict[str, str] = {"grant_type": "client_credentials"}
         token_headers: dict[str, str] = {
             "Authorization": f"Basic {self.client_creds_b64}",
@@ -77,14 +48,6 @@ class SpotifyAPI:
         return self.access_token
 
     def get_headers(self) -> dict[str, str]:
-        """Build headers for authorized Spotify API requests.
-
-        Returns:
-            dict[str, str]: Headers including the Bearer access token.
-
-        Raises:
-            RuntimeError: If `get_token()` has not been called.
-        """
         if not self.access_token:
             raise RuntimeError("No access token. Call get_token() first.")
         return {
@@ -93,18 +56,6 @@ class SpotifyAPI:
         }
 
     def make_request(self, endpoint: str, params: dict | None = None) -> dict[str, Any]:
-        """Make a GET request to the Spotify API.
-
-        Args:
-            endpoint (str): API endpoint (e.g., "/v1/tracks/{id}").
-            params (dict | None): Optional query parameters.
-
-        Returns:
-            dict[str, Any]: JSON response from the Spotify API.
-
-        Raises:
-            RuntimeError: If the request fails.
-        """
         url: str = self.BASE_URL + endpoint
         headers: dict[str, str] = self.get_headers()
 
@@ -122,17 +73,8 @@ class SpotifyAPI:
         limit: int = 10,
         market: str | None = None,
     ) -> dict[str, Any]:
-        """Search for tracks, artists, albums or playlists.
-
-        Args:
-            query (str): Search query string (e.g., "Taylor Swift").
-            search_type (list[str]): Types to search (e.g., ["track", "album"]).
-            limit (int, optional): Number of results to return. Defaults to 10.
-            market (str | None, optional): Market code (e.g., "US", "PL").
-                Defaults to None.
-
-        Returns:
-            dict[str, Any]: JSON response containing search results.
+        """
+        https://developer.spotify.com/documentation/web-api/reference/search
         """
         search_type_str: str = ",".join(search_type)
         params: dict[str, Any] = {
@@ -144,74 +86,127 @@ class SpotifyAPI:
         if market is not None:
             params["market"] = market
 
-        return self.make_request("/v1/search", params=params)
+        return self.make_request("/search", params=params)
 
-    def get_track(self, track_id: str) -> dict[str, Any]:
-        """Retrieve information about a track.
-
-        Args:
-            track_id (str): Spotify track ID.
-
-        Returns:
-            dict[str, Any]: JSON response containing track details.
+    def get_track(self, track_id: str, market: str | None = None) -> dict[str, Any]:
         """
-        return self.make_request(f"/v1/tracks/{track_id}")
+        Get Spotify catalog information for a single track.
+        https://developer.spotify.com/documentation/web-api/reference/get-track
+        """
+        params: dict[str, Any] = {}
+        if market:
+            params["market"] = market
+        return self.make_request(f"/tracks/{track_id}", params=params)
+
+    def get_several_tracks(
+        self, track_ids: list[str], market: str | None = None
+    ) -> dict[str, Any]:
+        """
+        Get Spotify catalog information for multiple tracks based on their IDs.
+        https://developer.spotify.com/documentation/web-api/reference/get-several-tracks
+        """
+        ids_str = ",".join(track_ids)
+        params: dict[str, Any] = {"ids": ids_str}
+        if market:
+            params["market"] = market
+        return self.make_request("/tracks", params=params)
 
     def get_artist(self, artist_id: str) -> dict[str, Any]:
-        """Retrieve information about an artist.
-
-        Args:
-            artist_id (str): Spotify artist ID.
-
-        Returns:
-            dict[str, Any]: JSON response containing artist details.
         """
-        return self.make_request(f"/v1/artists/{artist_id}")
-
-    def get_album(self, album_id: str) -> dict[str, Any]:
-        """Retrieve information about an album.
-
-        Args:
-            album_id (str): Spotify album ID.
-
-        Returns:
-            dict[str, Any]: JSON response containing album details.
+        Get Spotify catalog information for a single artist.
+        https://developer.spotify.com/documentation/web-api/reference/get-an-artist
         """
-        return self.make_request(f"/v1/albums/{album_id}")
+        return self.make_request(f"/artists/{artist_id}")
 
-    def get_artist_top_tracks(
-        self, artist_id: str, market: str | None = "US"
+    def get_several_artists(self, artist_ids: list[str]) -> dict[str, Any]:
+        """
+        Get Spotify catalog information for multiple artists.
+        Maximum: 50 IDs.
+        https://developer.spotify.com/documentation/web-api/reference/get-multiple-artists
+        """
+        ids_str = ",".join(artist_ids)
+        params: dict[str, Any] = {"ids": ids_str}
+        return self.make_request("/artists", params=params)
+
+    def get_artist_albums(
+        self,
+        artist_id: str,
+        include_groups: list[str] | None = None,
+        market: str | None = None,
+        limit: int = 20,
+        offset: int = 0,
     ) -> dict[str, Any]:
-        """Retrieve the top tracks for a given artist.
-
-        Args:
-            artist_id (str): Spotify artist ID.
-            market (str | None, optional): Market code (e.g., "US", "PL").
-                Defaults to "US".
-
-        Returns:
-            dict[str, Any]: JSON response containing the artist's top tracks.
         """
-        return self.make_request(
-            f"/v1/artists/{artist_id}/top-tracks", params={"market": market}
-        )
+        Get Spotify catalog information about an artist's albums.
+        https://developer.spotify.com/documentation/web-api/reference/get-an-artists-albums
 
-    def get_artist_top_albums(
-        self, artist_id: str, limit: int = 10, market: str | None = "US"
+        include_groups can be: album, single, appears_on, compilation
+        """
+        params: dict[str, Any] = {"limit": limit, "offset": offset}
+        if include_groups:
+            params["include_groups"] = ",".join(include_groups)
+        if market:
+            params["market"] = market
+        return self.make_request(f"/artists/{artist_id}/albums", params=params)
+
+    def get_artist_top_tracks(self, artist_id: str, market: str) -> dict[str, Any]:
+        """
+        Get Spotify catalog information about an artist's top tracks by country.
+        Market is required (ISO 3166-1 alpha-2 country code).
+        https://developer.spotify.com/documentation/web-api/reference/get-an-artists-top-tracks
+        """
+        params: dict[str, Any] = {"market": market}
+        return self.make_request(f"/artists/{artist_id}/top-tracks", params=params)
+
+    def get_album(self, album_id: str, market: str | None = None) -> dict[str, Any]:
+        """
+        Get Spotify catalog information for a single album.
+        https://developer.spotify.com/documentation/web-api/reference/get-an-album
+        """
+        params: dict[str, Any] = {}
+        if market:
+            params["market"] = market
+        return self.make_request(f"/albums/{album_id}", params=params)
+
+    def get_several_albums(
+        self, album_ids: list[str], market: str | None = None
     ) -> dict[str, Any]:
-        """Retrieve the top albums for a given artist.
-
-        Args:
-            artist_id (str): Spotify artist ID.
-            limit (int, optional): Maximum of albums that will be returned.
-                Defaults to 10.
-            market (str | None, optional): Market code (e.g., "US", "PL").
-                Defaults to "US".
-
-        Returns:
-            dict[str, Any]: JSON response containing the artist's top albums.
         """
-        return self.make_request(
-            f"/v1/artists/{artist_id}/albums",
-            params={"include_groups": "album,single", "market": market, "limit": limit},
-        )
+        Get Spotify catalog information for multiple albums.
+        Maximum: 20 IDs.
+        https://developer.spotify.com/documentation/web-api/reference/get-multiple-albums
+        """
+        ids_str = ",".join(album_ids)
+        params: dict[str, Any] = {"ids": ids_str}
+        if market:
+            params["market"] = market
+        return self.make_request("/albums", params=params)
+
+    def get_album_tracks(
+        self,
+        album_id: str,
+        market: str | None = None,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> dict[str, Any]:
+        """
+        Get Spotify catalog information about an album’s tracks.
+        Supports pagination.
+        https://developer.spotify.com/documentation/web-api/reference/get-an-albums-tracks
+        """
+        params: dict[str, Any] = {"limit": limit, "offset": offset}
+        if market:
+            params["market"] = market
+        return self.make_request(f"/albums/{album_id}/tracks", params=params)
+
+    def get_new_releases(
+        self,
+        limit: int = 20,
+        offset: int = 0,
+    ) -> dict[str, Any]:
+        """
+        Get a list of new album releases featured in Spotify.
+        https://developer.spotify.com/documentation/web-api/reference/get-new-releases
+        """
+        params: dict[str, Any] = {"limit": limit, "offset": offset}
+        return self.make_request("/browse/new-releases", params=params)

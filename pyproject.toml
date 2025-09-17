@@ -34,18 +34,12 @@ lint.select = [
     "RET",
     "ARG",
     "N",
-    "D",
     "S",
 ]
 
 lint.ignore = [
-    "D203",
-    "D205",
-    "D213",
     "S101",
 ]
-
-lint.per-file-ignores = { "__init__.py" = ["D104"], "tests/*.py" = ["D100", "D101", "D102", "D103"] }
 
 # Max complexity
 lint.mccabe.max-complexity = 10
