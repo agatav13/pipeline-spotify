@@ -10,7 +10,7 @@ class TransformSpotify:
         artists = []
         for artist in raw_album.get("artists", []):
             if artist.get("id") and artist.get("name"):
-                artists.appebd(
+                artists.append(
                     {
                         "id": artist["id"],
                         "name": artist["name"],
@@ -59,7 +59,7 @@ class TransformSpotify:
 
     def transform_new_releases(
         self, raw_albums: list[dict[str, Any]]
-    ) -> list[dict[str[Any]]]:
+    ) -> list[dict[str, Any]]:
         transformed = []
         for raw_album in raw_albums:
             cleaned = self.clean_album(raw_album)
