@@ -90,7 +90,7 @@ def test_make_request_json_response(mocker: Any) -> None:
 
     mocker.patch("requests.get", return_value=fake_response)
 
-    result = client.make_request("/v1/tracks/123")
+    result = client.make_request("/tracks/123")
 
     assert result == {"name": "Taylor Swift"}
 
@@ -125,7 +125,7 @@ def test_search(mocker: Any) -> None:
     result = client.search("Taylor Swift", ["track", "album"], limit=5, market="US")
 
     mock_make_request.assert_called_once_with(
-        "/v1/search",
+        "/search",
         params={"q": "Taylor Swift", "type": "track,album", "limit": 5, "market": "US"},
     )
 
