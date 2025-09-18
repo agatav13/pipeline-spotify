@@ -1,15 +1,14 @@
-CREATE TABLE IF NOT EXISTS artists (
+CREATE TABLE IF NOT EXISTS artist (
     artist_id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
+    artist_name TEXT NOT NULL,
     spotify_url TEXT,
     extracted_at TEXT,
-    processed_at TEXT,
+    processed_at TEXT
 );
 
--- Albums table
-CREATE TABLE IF NOT EXISTS albums (
+CREATE TABLE IF NOT EXISTS album (
     album_id TEXT PRIMARY KEY,
-    name TEXT NOT NULL,
+    album_name TEXT NOT NULL,
     album_type TEXT,
     release_date TEXT,
     release_year INTEGER,
@@ -20,14 +19,14 @@ CREATE TABLE IF NOT EXISTS albums (
     extracted_at TEXT,
     extraction_type TEXT,
     processed_at TEXT,
-    data_type TEXT,
+    data_type TEXT
 );
 
--- (albums <-> artists)
-CREATE TABLE IF NOT EXISTS album_artists (
+-- (album <-> artist)
+CREATE TABLE IF NOT EXISTS album_artist (
     album_id TEXT NOT NULL,
     artist_id TEXT NOT NULL,
     PRIMARY KEY (album_id, artist_id),
-    FOREIGN KEY (album_id) REFERENCES albums(album_id) ON DELETE CASCADE,
-    FOREIGN KEY (artist_id) REFERENCES artists(artist_id) ON DELETE CASCADE
+    FOREIGN KEY (album_id) REFERENCES album(album_id) ON DELETE CASCADE,
+    FOREIGN KEY (artist_id) REFERENCES artist(artist_id) ON DELETE CASCADE
 );
