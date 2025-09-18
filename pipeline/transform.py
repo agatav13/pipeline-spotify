@@ -12,8 +12,8 @@ class TransformSpotify:
             if artist.get("id") and artist.get("name"):
                 artists.append(
                     {
-                        "id": artist["id"],
-                        "name": artist["name"],
+                        "artist_id": artist["id"],
+                        "artist_name": artist["name"],
                         "spotify_url": artist.get("external_urls", {}).get("spotify"),
                     }
                 )
@@ -43,8 +43,8 @@ class TransformSpotify:
             "album_name": raw_album["name"].strip(),
             "album_type": raw_album.get("album_type", "unknown"),
             "artists": artists,
-            "primary_artist_name": artists[0]["name"] if artists else "Unknown",
-            "primary_artist_id": artists[0]["id"] if artists else None,
+            "primary_artist_name": artists[0]["artist_name"] if artists else "Unknown",
+            "primary_artist_id": artists[0]["artist_id"] if artists else None,
             "release_date": release_date,
             "release_year": release_year,
             "release_date_precision": raw_album.get("release_date_precision"),
