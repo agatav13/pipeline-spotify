@@ -1,4 +1,5 @@
 import base64
+import logging
 import os
 from typing import Any
 
@@ -6,6 +7,8 @@ import requests
 from dotenv import load_dotenv
 
 load_dotenv()
+
+logger = logging.getLogger(__name__)
 
 
 class SpotifyAPI:
@@ -17,6 +20,7 @@ class SpotifyAPI:
         self.client_secret: str | None = os.getenv("CLIENT_SECRET")
 
         if not self.client_id or not self.client_secret:
+            logger.error("Missing CLIENT_ID or CLIENT_SECRET in environment variables.")
             raise ValueError(
                 "Missing CLIENT_ID or CLIENT_SECRET in environment variables."
             )
@@ -27,7 +31,10 @@ class SpotifyAPI:
         self.access_token: str | None = None
         self.expires_in: int | None = None
 
+        logger.info("SpotifyAPI initialized successfully.")
+
     def get_token(self) -> str:
+        logger.debug("Requesting new access token...")
         token_data: dict[str, str] = {"grant_type": "client_credentials"}
         token_headers: dict[str, str] = {
             "Authorization": f"Basic {self.client_creds_b64}",
@@ -39,16 +46,22 @@ class SpotifyAPI:
         )
 
         if req.status_code != 200:
+            logger.error("Failed to get token: %s %s", req.status_code, req.text)
             raise RuntimeError(f"Failed to get token: {req.status_code} {req.text}")
 
         data = req.json()
         self.access_token = data["access_token"]
         self.expires_in = data["expires_in"]
 
+        logger.info(
+            "Access token retrieved successfully (expires in %s seconds).",
+            self.expires_in,
+        )
         return self.access_token
 
     def get_headers(self) -> dict[str, str]:
         if not self.access_token:
+            logger.error("No access token. Call get_token() first.")
             raise RuntimeError("No access token. Call get_token() first.")
         return {
             "Authorization": f"Bearer {self.access_token}",
@@ -59,11 +72,14 @@ class SpotifyAPI:
         url: str = self.BASE_URL + endpoint
         headers: dict[str, str] = self.get_headers()
 
+        logger.debug("Making request to %s with params=%s", url, params)
         req = requests.get(url=url, headers=headers, params=params, timeout=10)
 
         if req.status_code != 200:
+            logger.error("Request failed [%s]: %s", req.status_code, req.text)
             raise RuntimeError(f"Failed to make request: {req.status_code} {req.text}")
 
+        logger.info("Request to %s succeeded.", endpoint)
         return req.json()
 
     def search(

@@ -1,12 +1,17 @@
+import logging
 import sqlite3
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 class LoadSpotify:
     def __init__(self, db_path: str) -> None:
         self.db_path = db_path
+        logger.info("LoadSpotify initialized with DB path: %s", db_path)
 
     def load_album(self, clean_album: dict[str, Any]) -> None:
+        logger.debug("Logging album into DB: %s", clean_album["album_name"])
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
 
@@ -83,6 +88,10 @@ class LoadSpotify:
                     ),
                 )
 
+        logger.info("Album loaded: %s", clean_album["album_name"])
+
     def load_new_releases(self, clean_albums: list[dict[str, Any]]) -> None:
+        logger.info("Loading %s albums into DB...", len(clean_albums))
         for clean_album in clean_albums:
             self.load_album(clean_album=clean_album)
+        logger.info("Finished loading albums.")

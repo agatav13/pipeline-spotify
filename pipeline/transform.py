@@ -1,10 +1,14 @@
+import logging
 from datetime import UTC, datetime
 from typing import Any
+
+logger = logging.getLogger(__name__)
 
 
 class TransformSpotify:
     def clean_album(self, raw_album: dict[str, Any]) -> dict[str, Any] | None:
         if not raw_album.get("id") or not raw_album.get("name"):
+            logger.warning("Skipping album with missing id or name: %s", raw_album)
             return None
 
         artists = []
@@ -38,6 +42,7 @@ class TransformSpotify:
         except (ValueError, IndexError):
             release_year = None
 
+        logger.debug("Transformed album: %s", raw_album["name"])
         return {
             "album_id": raw_album["id"],
             "album_name": raw_album["name"].strip(),
@@ -60,9 +65,11 @@ class TransformSpotify:
     def transform_new_releases(
         self, raw_albums: list[dict[str, Any]]
     ) -> list[dict[str, Any]]:
+        logger.info("Transforming %s albums...", len(raw_albums))
         transformed = []
         for raw_album in raw_albums:
             cleaned = self.clean_album(raw_album)
             if cleaned:
                 transformed.append(cleaned)
+        logger.info("Transformation complete. %s albums cleaned.", len(transformed))
         return transformed
