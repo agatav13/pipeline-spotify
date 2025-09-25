@@ -1,7 +1,9 @@
 from datetime import datetime
+
 import pytest
 
 from pipeline.extract import ExtractSpotify
+
 
 def test_init_calls_get_token(mocker):
     mock_client = mocker.patch("pipeline.extract.SpotifyAPI")
@@ -32,6 +34,7 @@ def test_extract_new_releases_returns_albums(mocker):
 
     datetime.fromisoformat(album["extracted_at"])
 
+
 def test_extract_new_releases_raises_on_error(mocker):
     mock_client = mocker.patch("pipeline.extract.SpotifyAPI")
     mock_instance = mock_client.return_value
@@ -40,4 +43,4 @@ def test_extract_new_releases_raises_on_error(mocker):
     extractor = ExtractSpotify()
 
     with pytest.raises(Exception, match="Failed to extract new releases."):
-        extractor.extract_new_releases(limit=1)  
+        extractor.extract_new_releases(limit=1)
