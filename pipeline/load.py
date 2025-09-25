@@ -1,92 +1,92 @@
 import logging
-import sqlite3
 from typing import Any
+
+import psycopg2
 
 logger = logging.getLogger(__name__)
 
 
 class LoadSpotify:
-    def __init__(self, db_path: str) -> None:
-        self.db_path = db_path
-        logger.info("LoadSpotify initialized with DB path: %s", db_path)
+    def __init__(self, database_url: str) -> None:
+        self.database_url = database_url
+        logger.info("LoadSpotify initialized with database URL.")
 
     def load_album(self, clean_album: dict[str, Any]) -> None:
         logger.debug("Logging album into DB: %s", clean_album["album_name"])
-        with sqlite3.connect(self.db_path) as conn:
-            cursor = conn.cursor()
-
-            cursor.execute(
-                """
-                INSERT INTO album (
-                    album_id, album_name, album_type, release_date, release_year,
-                    release_date_precision, total_tracks, image_url, spotify_url,
-                    extracted_at, extraction_type, processed_at, data_type
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                ON CONFLICT(album_id) DO UPDATE SET
-                    album_name = excluded.album_name,
-                    album_type = excluded.album_type,
-                    release_date = excluded.release_date,
-                    release_year = excluded.release_year,
-                    release_date_precision = excluded.release_date_precision,
-                    total_tracks = excluded.total_tracks,
-                    image_url = excluded.image_url,
-                    spotify_url = excluded.spotify_url,
-                    extracted_at = excluded.extracted_at,
-                    extraction_type = excluded.extraction_type,
-                    processed_at = excluded.processed_at,
-                    data_type = excluded.data_type;
-                """,
-                (
-                    clean_album["album_id"],
-                    clean_album["album_name"],
-                    clean_album["album_type"],
-                    clean_album["release_date"],
-                    clean_album["release_year"],
-                    clean_album["release_date_precision"],
-                    clean_album["total_tracks"],
-                    clean_album["image_url"],
-                    clean_album["spotify_url"],
-                    clean_album["extracted_at"],
-                    clean_album["extraction_type"],
-                    clean_album["processed_at"],
-                    clean_album["data_type"],
-                ),
-            )
-
-            for artist in clean_album.get("artists", []):
+        with psycopg2.connect(self.database_url) as conn:
+            with conn.cursor() as cursor:
                 cursor.execute(
                     """
-                    INSERT INTO artist (
-                        artist_id, artist_name, spotify_url,
-                        extracted_at, processed_at
-                    ) VALUES (?, ?, ?, ?, ?)
-                    ON CONFLICT(artist_id) DO UPDATE SET
-                        artist_name = excluded.artist_name,
-                        spotify_url = excluded.spotify_url,
-                        extracted_at = excluded.extracted_at,
-                        processed_at = excluded.processed_at;
-                    """,
-                    (
-                        artist["artist_id"],
-                        artist["artist_name"],
-                        artist["spotify_url"],
-                        clean_album["extracted_at"],
-                        clean_album["processed_at"],
-                    ),
-                )
-
-                cursor.execute(
-                    """
-                    INSERT INTO album_artist (
-                        album_id, artist_id
-                    ) VALUES (?, ?)
-                    ON CONFLICT(album_id, artist_id) DO NOTHING;
+                    INSERT INTO album (
+                        album_id, album_name, album_type, release_date, release_year,
+                        release_date_precision, total_tracks, image_url, spotify_url,
+                        extracted_at, extraction_type, processed_at, data_type
+                    ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s, %s)
+                    ON CONFLICT (album_id) DO UPDATE SET
+                        album_name = EXCLUDED.album_name,
+                        album_type = EXCLUDED.album_type,
+                        release_date = EXCLUDED.release_date,
+                        release_year = EXCLUDED.release_year,
+                        release_date_precision = EXCLUDED.release_date_precision,
+                        total_tracks = EXCLUDED.total_tracks,
+                        image_url = EXCLUDED.image_url,
+                        spotify_url = EXCLUDED.spotify_url,
+                        extracted_at = EXCLUDED.extracted_at,
+                        extraction_type = EXCLUDED.extraction_type,
+                        processed_at = EXCLUDED.processed_at,
+                        data_type = EXCLUDED.data_type;
                     """,
                     (
                         clean_album["album_id"],
-                        artist["artist_id"],
+                        clean_album["album_name"],
+                        clean_album["album_type"],
+                        clean_album["release_date"],
+                        clean_album["release_year"],
+                        clean_album["release_date_precision"],
+                        clean_album["total_tracks"],
+                        clean_album["image_url"],
+                        clean_album["spotify_url"],
+                        clean_album["extracted_at"],
+                        clean_album["extraction_type"],
+                        clean_album["processed_at"],
+                        clean_album["data_type"],
                     ),
                 )
+
+                for artist in clean_album.get("artists", []):
+                    cursor.execute(
+                        """
+                        INSERT INTO artist (
+                            artist_id, artist_name, spotify_url,
+                            extracted_at, processed_at
+                        ) VALUES (%s, %s, %s, %s, %s)
+                        ON CONFLICT (artist_id) DO UPDATE SET
+                            artist_name = EXCLUDED.artist_name,
+                            spotify_url = EXCLUDED.spotify_url,
+                            extracted_at = EXCLUDED.extracted_at,
+                            processed_at = EXCLUDED.processed_at;
+                        """,
+                        (
+                            artist["artist_id"],
+                            artist["artist_name"],
+                            artist["spotify_url"],
+                            clean_album["extracted_at"],
+                            clean_album["processed_at"],
+                        ),
+                    )
+
+                    cursor.execute(
+                        """
+                        INSERT INTO album_artist (
+                            album_id, artist_id
+                        ) VALUES (%s, %s)
+                        ON CONFLICT (album_id, artist_id) DO NOTHING;
+                        """,
+                        (
+                            clean_album["album_id"],
+                            artist["artist_id"],
+                        ),
+                    )
 
         logger.info("Album loaded: %s", clean_album["album_name"])
 

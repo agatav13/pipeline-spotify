@@ -2,23 +2,23 @@ CREATE TABLE IF NOT EXISTS artist (
     artist_id TEXT PRIMARY KEY,
     artist_name TEXT NOT NULL,
     spotify_url TEXT,
-    extracted_at TEXT,
-    processed_at TEXT
+    extracted_at TIMESTAMPTZ,
+    processed_at TIMESTAMPTZ
 );
 
 CREATE TABLE IF NOT EXISTS album (
     album_id TEXT PRIMARY KEY,
     album_name TEXT NOT NULL,
     album_type TEXT,
-    release_date TEXT,
+    release_date DATE,
     release_year INTEGER,
     release_date_precision TEXT,
     total_tracks INTEGER,
     image_url TEXT,
     spotify_url TEXT,
-    extracted_at TEXT,
+    extracted_at TIMESTAMPTZ,
     extraction_type TEXT,
-    processed_at TEXT,
+    processed_at TIMESTAMPTZ,
     data_type TEXT
 );
 

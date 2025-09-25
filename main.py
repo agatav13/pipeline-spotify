@@ -2,11 +2,13 @@ import logging
 import os
 from datetime import UTC, datetime
 
-from db.setup_db import ensure_db
+from dotenv import load_dotenv
+
 from pipeline.pipeline import Pipeline
 
-DB_PATH = "db/spotify.db"
-SCHEMA_PATH = "db/schema.sql"
+load_dotenv()
+
+DATABASE_URL = os.getenv("DATABASE_URL")
 
 os.makedirs("logs", exist_ok=True)
 
@@ -24,8 +26,7 @@ logger = logging.getLogger(__name__)
 
 def main():
     logger.info("Starting ETL pipeline...")
-    ensure_db(db_path=DB_PATH, schema_path=SCHEMA_PATH)
-    Pipeline(db_path=DB_PATH).run()
+    Pipeline(database_url=DATABASE_URL).run()
     logger.info("ETL pipeline finished successfully.")
 
 

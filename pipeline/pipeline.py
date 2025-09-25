@@ -8,10 +8,10 @@ logger = logging.getLogger(__name__)
 
 
 class Pipeline:
-    def __init__(self, db_path: str) -> None:
+    def __init__(self, database_url: str) -> None:
         self.extractor = ExtractSpotify()
         self.transformer = TransformSpotify()
-        self.loader = LoadSpotify(db_path)
+        self.loader = LoadSpotify(database_url=database_url)
         logger.info("Pipeline initialized.")
 
     def run(self):
