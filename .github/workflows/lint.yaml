@@ -22,7 +22,7 @@ jobs:
         uses: astral-sh/setup-uv@v1
 
       - name: Install dependencies
-        run: uv sync
+        run: uv sync --with dev
 
       - name: Run ruff format
         run: uv run ruff format
