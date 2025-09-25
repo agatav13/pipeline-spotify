@@ -1,4 +1,5 @@
 from datetime import datetime
+
 from pipeline.transform import TransformSpotify
 
 
@@ -20,7 +21,7 @@ def test_clean_album_valid_data():
         "release_date_precision": "day",
         "external_urls": {"spotify": "album_url"},
         "extracted_at": "2025-09-25T10:00:00Z",
-        "extraction_type": "new_releases"
+        "extraction_type": "new_releases",
     }
 
     transformer = TransformSpotify()
@@ -41,10 +42,12 @@ def test_clean_album_valid_data():
     assert cleaned["data_type"] == "album"
     datetime.fromisoformat(cleaned["processed_at"])
 
+
 def test_clean_album_missing_id_or_name_skips():
     transformer = TransformSpotify()
     assert transformer.clean_album({"name": "No ID"}) is None
     assert transformer.clean_album({"id": "123"}) is None
+
 
 def test_clean_album_invalid_total_tracks_and_release_date():
     raw_album = {
@@ -59,6 +62,7 @@ def test_clean_album_invalid_total_tracks_and_release_date():
     assert cleaned["total_tracks"] is None
     assert cleaned["release_year"] is None
 
+
 def test_clean_album_no_artists_or_images():
     raw_album = {
         "id": "789",
@@ -71,6 +75,7 @@ def test_clean_album_no_artists_or_images():
     assert cleaned["primary_artist_name"] == "Unknown"
     assert cleaned["primary_artist_id"] is None
     assert cleaned["image_url"] is None
+
 
 def test_transform_new_releases_filters_and_transforms():
     transformer = TransformSpotify()

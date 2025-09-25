@@ -1,6 +1,9 @@
+from unittest.mock import MagicMock, patch
+
 import pytest
-from unittest.mock import patch, MagicMock
+
 from pipeline.load import LoadSpotify
+
 
 @pytest.fixture
 def sample_clean_album():
@@ -23,6 +26,7 @@ def sample_clean_album():
         ],
     }
 
+
 def test_load_album_executes_queries(sample_clean_album):
     loader = LoadSpotify(database_url="postgres://test")
 
@@ -41,6 +45,7 @@ def test_load_album_executes_queries(sample_clean_album):
 
         params = [call[0][1] for call in mock_cursor.execute.call_args_list]
         assert any("1" in p for p in params)
+
 
 def test_load_new_releases_calls_load_album(mocker, sample_clean_album):
     loader = LoadSpotify(database_url="postgres://test")
