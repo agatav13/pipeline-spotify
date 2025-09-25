@@ -5,7 +5,10 @@ This project is an **ETL** (Extract, Transform, Load) pipeline for Spotify data.
 ## Project Structure
 
 ```bash
-├── .github/workflows/etl.yaml
+├── .github/workflows/
+│   ├── etl.yaml
+│   ├── lint.yaml
+│   └── test.yaml
 ├── api
 │   └── spotify_api.py
 ├── db
@@ -31,6 +34,7 @@ This project is an **ETL** (Extract, Transform, Load) pipeline for Spotify data.
 - Loads data into **Supabase Postgres** with conflict handling to avoid duplicates.
 - Maintains relationships between albums and artists.
 - Automated daily runs using **GitHub Actions** (via `cron` schedule).
+- Continuous integration: `ruff` linting and `pytest` testing on commits and pull requests.
 
 ## Installation
 
@@ -38,7 +42,7 @@ This project uses [uv](https://github.com/astral-sh/uv) for dependency managemen
 Make sure you have `uv` installed, then run:
 
 ```bash
-uv sync
+uv sync --group dev
 ```
 
 This will create a virtual environment and install all required dependencies from `pyproject.toml`.
@@ -77,6 +81,7 @@ The project includes a GitHub Actions workflow (`.github/workflows/etl.yaml`) th
 - Runs the ETL pipeline every day at 09:00 UTC.
 - Can also be triggered manually from the Actions tab.
 - Uses GitHub Secrets for storing credentials (`CLIENT_ID`, `CLIENT_SECRET`, `DATABASE_URL`).
+- Runs linting with `ruff` and tests with `pytest` on every push or pull request.
 
 ## Database Schema
 
@@ -90,8 +95,17 @@ Schema is defined in `db/schema.sql`.
 
 ## Testing
 
-Run the test suite with:
+Run the test suite locally with:
 
 ```bash
-pytest
+uv run pytest
 ```
+
+Format and lint code with:
+
+```bash
+uv run ruff format
+uv run ruff check --fix
+```
+
+This ensures your code follows consistent style rules and passes all tests.
