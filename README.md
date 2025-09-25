@@ -1,16 +1,15 @@
 # Spotify ETL Pipeline
 
-This project is a simple ETL (Extract, Transform, Load) pipeline for Spotify data. It extracts information about new album releases using the Spotify Web API, transforms the raw data into a clean format, and loads it into a local SQLite database.
+This project is an **ETL** (Extract, Transform, Load) pipeline for Spotify data. It extracts information about new album releases using the **[Spotify Web API](https://developer.spotify.com/documentation/web-api)**, transforms the raw data into a clean format, and loads it into a **Postgres database hosted on [Supabase](https://supabase.com/)**.
 
 ## Project Structure
 
 ```bash
+├── .github/workflows/etl.yaml
 ├── api
 │   └── spotify_api.py
 ├── db
 │   ├── schema.sql
-│   ├── setup_db.py
-│   └── spotify.db
 ├── pipeline
 │   ├── extract.py
 │   ├── load.py
@@ -29,8 +28,9 @@ This project is a simple ETL (Extract, Transform, Load) pipeline for Spotify dat
 
 - Extracts new album releases from Spotify.
 - Cleans and normalizes album and artist data.
-- Loads data into a SQLite database with conflict handling to avoid duplicates.
+- Loads data into **Supabase Postgres** with conflict handling to avoid duplicates.
 - Maintains relationships between albums and artists.
+- Automated daily runs using **GitHub Actions** (via `cron` schedule).
 
 ## Installation
 
@@ -48,26 +48,35 @@ This will create a virtual environment and install all required dependencies fro
 Create a `.env` file in the project root with your Spotify API credentials:
 
 ```ini
-SPOTIFY_CLIENT_ID=<your_client_id>
-SPOTIFY_CLIENT_SECRET=<your_client_secret>
+CLIENT_ID=<your_client_id>
+CLIENT_SECRET=<your_client_secret>
+DATABASE_URL=<your_database_url>
 ```
+
+The `DATABASE_URL` should be copied from Supabase transaction pooler URI.
 
 ## Usage
 
-To run the pipeline end-to-end:
+Run the pipeline locally with:
 
 ```bash
-python main.py
+uv run main.py
 ```
 
-On first run, this will:
+This will:
 
-1. Create the SQLite database (`db/spotify.db`) using `db/schema.sql`.
+1. Connect to your Supabase Postgres database.
 2. Extract new album releases from the Spotify API.
 3. Transform and clean the data.
-4. Load the data into the database.
+4. Load the data into the database (avoiding duplicates).
 
-The next runs will update the database with new data without duplicating existing entries.
+## Automation (CI/CD)
+
+The project includes a GitHub Actions workflow (`.github/workflows/etl.yaml`) that:
+
+- Runs the ETL pipeline every day at 09:00 UTC.
+- Can also be triggered manually from the Actions tab.
+- Uses GitHub Secrets for storing credentials (`CLIENT_ID`, `CLIENT_SECRET`, `DATABASE_URL`).
 
 ## Database Schema
 
