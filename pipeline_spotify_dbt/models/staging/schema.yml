@@ -1,0 +1,82 @@
+version: 2
+
+sources:
+  - name: public
+    schema: public
+    tables:
+      - name: album
+        description: "Raw table containing album data from the source system."
+        columns:
+          - name: album_id
+            description: "Unique identifier for each album."
+            tests:
+              - not_null
+              - unique
+          - name: album_name
+            description: "Name of the album."
+            tests:
+              - not_null
+
+      - name: album_artist
+        description: "Raw table mapping albums to their respective artists."
+        columns:
+          - name: album_id
+            description: "Identifier for the album, referencing the album table."
+            tests:
+              - not_null
+          - name: artist_id
+            description: "Identifier for the artist, referencing the artist table."
+            tests:
+              - not_null
+
+      - name: artist
+        description: "Raw table containing artist data from the source system."
+        columns:
+          - name: artist_id
+            description: "Unique identifier for each artist."
+            tests:
+              - not_null
+              - unique
+          - name: artist_name
+            description: "Name of the artist."
+            tests:
+              - not_null
+
+models:
+  - name: stg_album
+    description: "Staging table for raw albums, cleans and prepares album data for analytics."
+    columns:
+      - name: album_id
+        description: "Unique identifier for each album."
+        tests: [unique, not_null]
+      - name: album_name
+        description: "Name of the album."
+        tests: [not_null]
+
+  - name: stg_artist
+    description: "Staging table for raw artists, cleans and prepares artist data for analytics."
+    columns:
+      - name: artist_id
+        description: "Unique identifier for each artist."
+        tests: [unique, not_null]
+      - name: artist_name
+        description: "Name of the artist."
+        tests: [not_null]
+
+  - name: stg_album_artist
+    description: "Bridge table between albums and artists, staging the relationship between them."
+    columns:
+      - name: album_id
+        description: "Identifier for the album, referencing stg_album."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_album')
+              field: album_id
+      - name: artist_id
+        description: "Identifier for the artist, referencing stg_artist."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('stg_artist')
+              field: artist_id

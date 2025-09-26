@@ -1,0 +1,43 @@
+version: 2
+
+models:
+  - name: dim_artist
+    description: "Dimension table of Spotify artists."
+    columns:
+      - name: artist_id
+        description: "Unique identifier for each artist."
+        tests: [unique, not_null]
+      - name: artist_name
+        description: "Name of the artist."
+        tests: [not_null]
+
+  - name: dim_album
+    description: "Dimension table of Spotify albums."
+    columns:
+      - name: album_id
+        description: "Unique identifier for each album."
+        tests: [unique, not_null]
+      - name: album_name
+        description: "Name of the album."
+        tests: [not_null]
+      - name: release_date
+        description: "Release date of the album."
+        tests: [not_null, valid_release_date]
+
+  - name: fact_album_artist
+    description: "Fact table mapping albums to their artists. Represents the relationship between albums and artists."
+    columns:
+      - name: album_id
+        description: "Identifier for the album, referencing dim_album."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_album')
+              field: album_id
+      - name: artist_id
+        description: "Identifier for the artist, referencing dim_artist."
+        tests:
+          - not_null
+          - relationships:
+              to: ref('dim_artist')
+              field: artist_id

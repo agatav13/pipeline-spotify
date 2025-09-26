@@ -16,3 +16,5 @@ sandbox/
 
 logs/
 *.db
+
+pipeline_spotify_dbt/target/

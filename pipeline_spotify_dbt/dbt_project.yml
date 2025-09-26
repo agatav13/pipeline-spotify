@@ -1,0 +1,22 @@
+name: 'pipeline_spotify_dbt'
+version: '1.0.0'
+
+profile: 'pipeline_spotify_dbt'
+
+model-paths: ["models"]
+analysis-paths: ["analyses"]
+test-paths: ["tests"]
+
+clean-targets:
+  - "target"
+  - "dbt_packages"
+
+models:
+  pipeline_spotify_dbt:
+    staging:
+      +schema: staging
+      +materialized: view
+
+    analytics:
+      +schema: analytics
+      +materialized: table
