@@ -49,9 +49,9 @@ jobs:
         run: uv sync
 
       - name: Run dbt
-        run: uv run --env-file .env dbt run --project-dir pipeline_spotify_dbt --profiles-dir pipeline_spotify_dbt
+        run: uv run dbt run --project-dir pipeline_spotify_dbt --profiles-dir pipeline_spotify_dbt
         env:
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Test dbt
-        run: uv run --env-file .env dbt test --project-dir pipeline_spotify_dbt --profiles-dir pipeline_spotify_dbt
+        run: uv run dbt test --project-dir pipeline_spotify_dbt --profiles-dir pipeline_spotify_dbt
