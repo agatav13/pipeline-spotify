@@ -1,4 +1,4 @@
-name: Lint & Format
+name: Testing & Linting
 
 on:
   push:
@@ -26,6 +26,9 @@ jobs:
 
       - name: Install dependencies
         run: uv sync --group dev
+
+      - name: Run pytest
+        run: uv run pytest
 
       - name: Run ruff format
         run: uv run ruff format
