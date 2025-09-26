@@ -29,3 +29,29 @@ jobs:
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+  run-dbt:
+    runs-on: ubuntu-latest
+    needs: run-etl
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.13'
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v3
+
+      - name: Install dependencies with uv
+        run: uv sync
+
+      - name: Run dbt
+        run: uv run --env-file .env dbt run --project-dir pipeline_spotify_dbt --profiles-dir pipeline_spotify_dbt
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
+
+      - name: Test dbt
+        run: uv run --env-file .env dbt test --project-dir pipeline_spotify_dbt --profiles-dir pipeline_spotify_dbt

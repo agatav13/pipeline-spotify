@@ -1,0 +1,12 @@
+pipeline_spotify_dbt:
+  target: dev
+  outputs:
+    dev:
+      type: postgres
+      host: "{{ env_var('SUPABASE_HOST') }}"
+      user: "{{ env_var('SUPABASE_USER') }}"
+      password: "{{ env_var('SUPABASE_PASSWORD') }}"
+      port: "{{ env_var('SUPABASE_PORT') | int }}"
+      dbname: "{{ env_var('SUPABASE_DB') }}"
+      schema: "{{ env_var('SUPABASE_SCHEMA') }}"
+      threads: 4

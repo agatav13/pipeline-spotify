@@ -17,4 +17,5 @@ sandbox/
 logs/
 *.db
 
-pipeline_spotify_dbt/target/
+target/
+.user.yml
