@@ -30,3 +30,14 @@ CREATE TABLE IF NOT EXISTS album_artist (
     FOREIGN KEY (album_id) REFERENCES album(album_id) ON DELETE CASCADE,
     FOREIGN KEY (artist_id) REFERENCES artist(artist_id) ON DELETE CASCADE
 );
+
+CREATE TABLE IF NOT EXISTS pipeline_metrics (
+    id SERIAL PRIMARY KEY,
+    run_at TIMESTAMP DEFAULT NOW(),   -- kiedy pipeline się wykonał
+    operation TEXT NOT NULL,          -- np. "load_new_releases"
+    status TEXT NOT NULL,             -- "success" albo "failure"
+    rows_added INT,                   -- ile nowych wierszy (opcjonalnie)
+    total_albums INT,                 -- ile albumów w bazie po runie
+    total_artists INT,                -- ile artystów
+    total_album_artist INT            -- ile powiązań album-artist
+);
