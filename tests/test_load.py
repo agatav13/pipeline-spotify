@@ -50,6 +50,7 @@ def test_load_album_executes_queries(sample_clean_album):
 def test_load_new_releases_calls_load_album(mocker, sample_clean_album):
     loader = LoadSpotify(database_url="postgres://test")
     mock_load_album = mocker.patch.object(loader, "load_album")
+    mocker.patch("pipeline.load.log_pipeline_run")
 
     loader.load_new_releases([sample_clean_album, sample_clean_album])
     assert mock_load_album.call_count == 2
