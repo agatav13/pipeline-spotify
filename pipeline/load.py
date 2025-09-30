@@ -97,9 +97,19 @@ class LoadSpotify:
         try:
             for clean_album in clean_albums:
                 self.load_album(clean_album=clean_album)
-            log_pipeline_run(database_url=self.database_url, operation="load_new_releases", status="success", rows_added=len(clean_albums))
+            log_pipeline_run(
+                database_url=self.database_url,
+                operation="load_new_releases",
+                status="success",
+                rows_added=len(clean_albums),
+            )
             logger.info("Finished loading albums.")
         except Exception as e:
-            log_pipeline_run(database_url=self.database_url, operation="load_new_releases", status="failure", rows_added=len(clean_albums))
+            log_pipeline_run(
+                database_url=self.database_url,
+                operation="load_new_releases",
+                status="failure",
+                rows_added=len(clean_albums),
+            )
             logger.error("Pipeline failes: %s", e)
             raise
