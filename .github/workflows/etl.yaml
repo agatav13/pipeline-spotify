@@ -2,7 +2,7 @@ name: Weekly ETL
 
 on:
   schedule:
-    - cron: '0 10 * * 5'
+    - cron: '0 10 * * 2,5'
   workflow_dispatch:
 
 jobs:
